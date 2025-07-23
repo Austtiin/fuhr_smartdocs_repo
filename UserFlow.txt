@@ -1,0 +1,39 @@
+s how the interactive UI and backend would work to achieve your desired experience:
+
+User Uploads Receipt:
+
+The user interacts with your Azure Static Web App UI.
+
+They select a receipt image file (e.g., JPG, PNG, PDF).
+
+The UI directly uploads this file to a designated "pending" container in Azure Blob Storage.
+
+UI Behavior: Immediately after upload, the UI displays a loading circle next to the uploaded file, indicating that processing has begun.
+
+Trigger Azure Function:
+
+The new file upload event in Azure Blob Storage automatically triggers an Azure Function (specifically, a Blob Trigger function).
+
+Process with Document Intelligence:
+
+The Azure Function retrieves the uploaded image.
+
+It then calls the Azure AI Document Intelligence (Receipt Model) API to perform OCR and extract structured data from the receipt.
+
+Store Processed Data:
+
+Once Document Intelligence returns the extracted JSON data, the Azure Function processes it.
+
+It stores this structured receipt data (e.g., merchant, total, date, line items, and a link to the original image in Blob Storage) into Azure Cosmos DB (or your chosen database). It also updates the status of the file.
+
+Update UI (Real-time or Polling):
+
+Option A (Real-time with Azure SignalR Service): For a truly interactive experience, the Azure Function can send a message to Azure SignalR Service when a receipt is successfully processed. Your UI, connected to SignalR, receives this message and updates instantly.
+
+Option B (Polling): The UI periodically polls a lightweight API endpoint (another Azure Function or a simple Web App endpoint) to check the status of uploaded files.
+
+UI Behavior: Once the processing is complete and the status is updated, the UI automatically moves the receipt entry from the "loading" state to a "completed files" section or breadcrumb, displaying the extracted key information.
+
+Viewing Completed Files:
+
+The "completed files" breadcrumb/section in your UI will fetch data directly from Azure Cosmos DB to display the processed receipt details. Users can click on a processed receipt to view its extracted data and potentially the original image.
